@@ -1,56 +1,47 @@
 import streamlit as st
-from openai import OpenAI
+import fitz  # PyMuPDF
+from huggingface_hub import InferenceClient
 
-# Show title and description.
-st.title("💬 Chatbot")
-st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
+# Set your Hugging Face API token
+hf_token = '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'
+
+# Initialize the Hugging Face Inference Client
+client = InferenceClient(
+    "google/gemma-1.1-7b-it",
+    token=hf_token,
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+def extract_text_from_pdf(pdf_file):
+    """Extract text from a PDF file."""
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    return text
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+def generate_response(prompt):
+    """Generate response from Hugging Face's Inference Client."""
+    messages = [{"role": "user", "content": prompt}]
+    response = ""
+    for message in client.chat_completion(messages=messages, max_tokens=500, stream=True):
+        response += message.choices[0].delta.content
+    return response.strip()
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+st.title("PDF Chatbot")
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+if uploaded_file is not None:
+    st.write("Extracting text from the PDF...")
+    pdf_text = extract_text_from_pdf(uploaded_file)
+    st.text_area("Extracted Text", pdf_text, height=300)
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    if pdf_text:
+        st.write("You can now chat with the PDF content.")
+        user_query = st.text_input("Ask a question about the PDF content:")
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
-
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        if user_query:
+            st.write("Generating response...")
+            chat_prompt = f"Based on the following PDF content, {pdf_text[:2000]}... Answer the following question: {user_query}"
+            response = generate_response(chat_prompt)
+            st.write(response)
