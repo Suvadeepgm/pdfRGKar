@@ -1,4 +1,3 @@
-
 import streamlit as st
 from llama_index.core import StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate
 from llama_index.llms.huggingface import HuggingFaceInferenceAPI
@@ -75,22 +74,25 @@ def handle_query(query):
 # Streamlit app initialization
 st.title("(PDF) Information and Inference🗞️")
 st.markdown("Retrieval-Augmented Generation") 
-st.markdown("start chat ...🚀")
+st.markdown("Start chat ...🚀")
 
 if 'messages' not in st.session_state:
     st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload a PDF and ask me anything about its content.'}]
 
 with st.sidebar:
     st.title("Menu:")
-    uploaded_file = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button")
+    uploaded_files = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
     if st.button("Submit & Process"):
-        with st.spinner("Processing..."):
-            filepath = "data/saved_pdf.pdf"
-            with open(filepath, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            # displayPDF(filepath)  # Display the uploaded PDF
-            data_ingestion()  # Process PDF every time new file is uploaded
-            st.success("Done")
+        if uploaded_files:
+            with st.spinner("Processing..."):
+                # Save uploaded files to data directory
+                for uploaded_file in uploaded_files:
+                    filepath = os.path.join(DATA_DIR, uploaded_file.name)
+                    with open(filepath, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+                # Process PDF files every time new files are uploaded
+                data_ingestion()
+                st.success("Done")
 
 user_prompt = st.chat_input("Ask me anything about the content of the PDF:")
 if user_prompt:
