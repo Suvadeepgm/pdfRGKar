@@ -9,7 +9,7 @@ import base64
 
 # Load environment variables
 load_dotenv()
-
+submitFlag=0
 # Configure the Llama index settings
 Settings.llm = HuggingFaceInferenceAPI(
     model_name="google/gemma-1.1-7b-it",
@@ -83,6 +83,7 @@ with st.sidebar:
     st.title("Menu:")
     uploaded_files = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
     if st.button("Submit & Process"):
+        submitFlag=1
         if uploaded_files:
             with st.spinner("Processing..."):
                 # Save uploaded files to data directory
@@ -95,11 +96,13 @@ with st.sidebar:
                 st.success("Done")
 
 user_prompt = st.chat_input("Ask me anything about the content of the PDF:")
-if user_prompt:
+if user_prompt and submitFlag=1:
     st.session_state.messages.append({'role': 'user', "content": user_prompt})
     response = handle_query(user_prompt)
     st.session_state.messages.append({'role': 'assistant', "content": response})
-
+else:
+    response = "Please upload and save the documents to chat."
+    st.session_state.messages.append({'role': 'assistant', "content": response})
 for message in st.session_state.messages:
     with st.chat_message(message['role']):
         st.write(message['content'])
