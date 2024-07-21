@@ -15,8 +15,7 @@ Settings.llm = HuggingFaceInferenceAPI(
     model_name="google/gemma-1.1-7b-it",
     tokenizer_name="google/gemma-1.1-7b-it",
     context_window=3000,
-    #token=os.getenv("HF_TOKEN"),
-    token="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",
+    token=os.getenv("HF_TOKEN"),
     max_new_tokens=512,
     generate_kwargs={"temperature": 0.1},
 )
@@ -63,18 +62,15 @@ def handle_query(query):
     query_engine = index.as_query_engine(text_qa_template=text_qa_template)
     answer = query_engine.query(query)
     
-    if hasattr(answer, 'response'):
-        return answer.response
-    elif isinstance(answer, dict) and 'response' in answer:
-        return answer['response']
+    if hasattr(answer, 'response') and hasattr(answer, 'citation'):
+        return f"{answer.response} (Source: {answer.citation})"
+    elif isinstance(answer, dict) and 'response' in answer and 'citation' in answer:
+        return f"{answer['response']} (Source: {answer['citation']})"
     else:
         return "Sorry, I couldn't find an answer."
 
-
 # Streamlit app initialization
 st.title("PDF ChatBot")
-#st.markdown("Retrieval-Augmented Generation") 
-#st.markdown("Start chat ...")
 
 if 'messages' not in st.session_state:
     st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload PDF files and ask me anything about the contents.'}]
