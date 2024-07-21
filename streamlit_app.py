@@ -72,15 +72,15 @@ def handle_query(query):
 
 
 # Streamlit app initialization
-st.title("(PDF) Information and Inference🗞️")
-st.markdown("Retrieval-Augmented Generation") 
-st.markdown("Start chat ...🚀")
+st.title("(PDF ChatBot")
+#st.markdown("Retrieval-Augmented Generation") 
+st.markdown("Start chat ...")
 
 if 'messages' not in st.session_state:
     st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload a PDF and ask me anything about its content.'}]
 
 with st.sidebar:
-    st.title("Menu:")
+    st.title("Documents:")
     uploaded_files = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", type="pdf", accept_multiple_files=True)
     if st.button("Submit & Process"):
         if uploaded_files:
