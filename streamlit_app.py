@@ -77,7 +77,7 @@ st.title("PDF ChatBot")
 #st.markdown("Start chat ...")
 
 if 'messages' not in st.session_state:
-    st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload a PDF and ask me anything about its content.'}]
+    st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload PDF files and ask me anything about the contents.'}]
 
 with st.sidebar:
     st.title("Documents:")
