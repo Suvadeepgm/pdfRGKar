@@ -72,9 +72,9 @@ def handle_query(query):
 
 
 # Streamlit app initialization
-st.title("(PDF ChatBot")
+st.title("PDF ChatBot")
 #st.markdown("Retrieval-Augmented Generation") 
-st.markdown("Start chat ...")
+#st.markdown("Start chat ...")
 
 if 'messages' not in st.session_state:
     st.session_state.messages = [{'role': 'assistant', "content": 'Hello! Upload a PDF and ask me anything about its content.'}]
