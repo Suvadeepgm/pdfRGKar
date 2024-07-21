@@ -1,4 +1,5 @@
 import streamlit as st
+import fitz  # PyMuPDF
 from llama_index.core import StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate
 from llama_index.llms.huggingface import HuggingFaceInferenceAPI
 from dotenv import load_dotenv
@@ -15,8 +16,7 @@ Settings.llm = HuggingFaceInferenceAPI(
     model_name="google/gemma-1.1-7b-it",
     tokenizer_name="google/gemma-1.1-7b-it",
     context_window=3000,
-    #token=os.getenv("HF_TOKEN"),
-    token="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",
+    token="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",  # Replace with your token
     max_new_tokens=512,
     generate_kwargs={"temperature": 0.1},
 )
@@ -38,25 +38,45 @@ def displayPDF(file):
     pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
     st.markdown(pdf_display, unsafe_allow_html=True)
 
+def extract_text_with_metadata(pdf_file, file_name):
+    """Extract text from a PDF file and include metadata."""
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    text_entries = []
+    for page_num, page in enumerate(doc):
+        text = page.get_text()
+        text_entries.append({
+            "text": text,
+            "file_name": file_name,
+            "page_num": page_num + 1
+        })
+    return text_entries
+
 def data_ingestion():
-    documents = SimpleDirectoryReader(DATA_DIR).load_data()
+    """Ingest data from all PDF files in the DATA_DIR."""
+    documents = []
+    for file_name in os.listdir(DATA_DIR):
+        if file_name.endswith('.pdf'):
+            file_path = os.path.join(DATA_DIR, file_name)
+            with open(file_path, "rb") as f:
+                documents.extend(extract_text_with_metadata(f, file_name))
     storage_context = StorageContext.from_defaults()
     index = VectorStoreIndex.from_documents(documents)
     index.storage_context.persist(persist_dir=PERSIST_DIR)
 
 def handle_query(query):
+    """Handle user query and return the response with references."""
     storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
     index = load_index_from_storage(storage_context)
     chat_text_qa_msgs = [
-    (
-        "user",
-        """You are a Q&A assistant named PdfMadeEasy, created by Suvadeep. Your main goal is to give you answers as accurately as possible, based on the instructions and context you have been given. If a question does not match the provided context or is outside the scope of the document, kindly advise the user to ask questions within the context of the document.
-        Context:
-        {context_str}
-        Question:
-        {query_str}
-        """
-    )
+        (
+            "user",
+            """You are a Q&A assistant named PdfMadeEasy, created by Suvadeep. Your main goal is to give you answers as accurately as possible, based on the instructions and context you have been given. If a question does not match the provided context or is outside the scope of the document, kindly advise the user to ask questions within the context of the document.
+            Context:
+            {context_str}
+            Question:
+            {query_str}
+            """
+        )
     ]
     text_qa_template = ChatPromptTemplate.from_messages(chat_text_qa_msgs)
     
@@ -64,12 +84,20 @@ def handle_query(query):
     answer = query_engine.query(query)
     
     if hasattr(answer, 'response'):
-        return answer.response
+        response = answer.response
     elif isinstance(answer, dict) and 'response' in answer:
-        return answer['response']
+        response = answer['response']
     else:
-        return "Sorry, I couldn't find an answer."
+        response = "Sorry, I couldn't find an answer."
 
+    # Add references to the response
+    references = []
+    for doc in answer.context.documents:
+        references.append(f"(Document: {doc['file_name']}, Page: {doc['page_num']})")
+    if references:
+        response += "\n\nReferences:\n" + "\n".join(references)
+    
+    return response
 
 # Streamlit app initialization
 st.title("(PDF) Information and Inference🗞️")
