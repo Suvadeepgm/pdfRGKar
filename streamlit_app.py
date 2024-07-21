@@ -96,7 +96,7 @@ with st.sidebar:
                 st.success("Done")
 
 user_prompt = st.chat_input("Ask me anything about the content of the PDF:")
-if user_prompt and submitFlag=1:
+if user_prompt and submitFlag==1:
     st.session_state.messages.append({'role': 'user', "content": user_prompt})
     response = handle_query(user_prompt)
     st.session_state.messages.append({'role': 'assistant', "content": response})
