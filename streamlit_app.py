@@ -7,10 +7,10 @@ from llama_index.core import Settings
 import os
 import base64
 
-# Load environment variables
+
 load_dotenv()
 
-# Configure the Llama index settings
+
 Settings.llm = HuggingFaceInferenceAPI(
     model_name="google/gemma-1.1-7b-it",
     tokenizer_name="google/gemma-1.1-7b-it",
@@ -24,11 +24,11 @@ Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
 )
 
-# Define the directory for persistent storage and data
+
 PERSIST_DIR = "./db"
 DATA_DIR = "data"
 
-# Ensure data directory exists
+
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(PERSIST_DIR, exist_ok=True)
 
