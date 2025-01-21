@@ -1,5 +1,5 @@
 import streamlit as st
-from llama_index import SimpleDirectoryReader, VectorStoreIndex, StorageContext, ChatPromptTemplate
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, ChatPromptTemplate
 from llama_index.llms.huggingface import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from qdrant_client import QdrantClient
