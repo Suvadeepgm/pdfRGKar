@@ -14,7 +14,7 @@ load_dotenv()
 Settings.llm = HuggingFaceInferenceAPI(
     model_name="google/gemma-1.1-7b-it",
     tokenizer_name="google/gemma-1.1-7b-it",
-    context_window=3000,
+    context_window=15000,
     token="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",
     max_new_tokens=512,
     generate_kwargs={"temperature": 0.1},
@@ -57,7 +57,7 @@ def handle_query(query):
     chat_text_qa_msgs = [
         (
             "user",
-            """You are a Q&A assistant named PdfMadeEasy, created by Suvadeep. Your main goal is to give answers as accurately as possible, based on the instructions and context you have been given. If asked about the accused, the accused is same as the person given punishment. Just explain things from the pdf. You don't have to go before or after the timeline. Always give a reference from the document. 
+            """You are a Q&A assistant named PdfMadeEasy, created by Suvadeep. Your main goal is to give answers as accurately as possible, based on the instructions and context you have been given. If asked about the accused, the accused is same as the person given punishment. Just explain things from the pdf. PW in the document referes to Presenting Witness. You don't have to go before or after the timeline. Always give a reference from the document. 
             Context:
             {context_str}
             Question:
