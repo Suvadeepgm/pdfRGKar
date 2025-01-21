@@ -32,7 +32,7 @@ os.makedirs(PERSIST_DIR, exist_ok=True)
 
 # Static PDF configuration
 STATIC_PDF_FILE = "WBSP070037082024_36_2025-01-20.pdf"  # Replace with your actual PDF file name
-STATIC_PDF_PATH = os.path(STATIC_PDF_FILE)
+STATIC_PDF_PATH = STATIC_PDF_FILE 
 
 # Ensure the static PDF is in place
 def ensure_static_pdf():
