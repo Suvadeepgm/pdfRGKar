@@ -84,13 +84,13 @@ ensure_static_pdf()
 
 # Display the static PDF
 st.sidebar.title("Static Document:")
-st.sidebar.write("Currently loaded document:")
-st.sidebar.write(STATIC_PDF_FILE)
-display_pdf(STATIC_PDF_PATH)
+st.sidebar.write("Judgement Copy Loaded.")
+#st.sidebar.write(STATIC_PDF_FILE)
+#display_pdf(STATIC_PDF_PATH)
 
 # Ingest static PDF data if not already processed
 if not os.listdir(PERSIST_DIR):  # Check if persistence directory is empty
-    with st.spinner("Processing static document..."):
+    with st.spinner("Processing document..."):
         data_ingestion()
         st.success("Static document processed successfully!")
 
