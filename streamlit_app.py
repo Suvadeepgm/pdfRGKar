@@ -7,7 +7,7 @@ from llama_index.core import Settings
 import os
 import base64
 
-
+# Load environment variables
 load_dotenv()
 
 # Configure LLM settings
@@ -23,23 +23,17 @@ Settings.embed_model = HuggingFaceEmbedding(
     model_name="BAAI/bge-small-en-v1.5"
 )
 
-# Directories
-PERSIST_DIR = "./db"
-DATA_DIR = "data"
+# Directories and file configuration
+PERSIST_DIR = "./db"  # For storing index files
+STATIC_PDF_FILE = "WBSP070037082024_36_2025-01-20.pdf"  # Static PDF file in the root directory
+STATIC_PDF_PATH = STATIC_PDF_FILE  # Path is just the file name since it's in the root directory
 
-os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(PERSIST_DIR, exist_ok=True)
-
-# Static PDF configuration
-STATIC_PDF_FILE = "WBSP070037082024_36_2025-01-20.pdf"  # Replace with your actual PDF file name
-STATIC_PDF_PATH = STATIC_PDF_FILE 
-
-# Ensure the static PDF is in place
+# Ensure static PDF exists
 def ensure_static_pdf():
     if not os.path.exists(STATIC_PDF_PATH):
         raise FileNotFoundError(
-            f"Static PDF file '{STATIC_PDF_FILE}' is missing in the 'data' directory. "
-            "Please place the file there before running the app."
+            f"Static PDF file '{STATIC_PDF_FILE}' is missing in the root directory. "
+            "Please place the file in the root before running the app."
         )
 
 # PDF Display Function
@@ -51,7 +45,7 @@ def display_pdf(file_path):
 
 # Data Ingestion for Static PDF
 def data_ingestion():
-    documents = SimpleDirectoryReader(DATA_DIR).load_data()
+    documents = SimpleDirectoryReader(".").load_data()  # Load files from the current directory
     storage_context = StorageContext.from_defaults()
     index = VectorStoreIndex.from_documents(documents)
     index.storage_context.persist(persist_dir=PERSIST_DIR)
